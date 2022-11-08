@@ -1,0 +1,8 @@
+
+# ignore files created by IDE & OS
+.env
+.idea
+.DS_STORE
+# ignore data folder
+data/
+
