@@ -16,9 +16,11 @@ from utils.dice_score import dice_loss
 from evaluate import evaluate
 from unet import UNet
 
-dir_img = Path('./data/imgs/')
-dir_mask = Path('./data/masks/')
-dir_checkpoint = Path('./checkpoints/')
+DATASET = ['Fluo-N2DL-HeLa','PhC-C2DH-U373']
+idx = 0
+
+dir_img = Path(f'../data/{DATASET[idx]}/01/')
+dir_mask = Path(f'../data/{DATASET[idx]}/01_ST/SEG/')
 
 
 def train_net(net,
@@ -139,7 +141,7 @@ def train_net(net,
                             **histograms
                         })
 
-        if save_checkpoint:
+        if False:
             Path(dir_checkpoint).mkdir(parents=True, exist_ok=True)
             torch.save(net.state_dict(), str(dir_checkpoint / 'checkpoint_epoch{}.pth'.format(epoch)))
             logging.info(f'Checkpoint {epoch} saved!')
@@ -172,7 +174,7 @@ if __name__ == '__main__':
     # Change here to adapt to your data
     # n_channels=3 for RGB images
     # n_classes is the number of probabilities you want to get per pixel
-    net = UNet(n_channels=3, n_classes=args.classes, bilinear=args.bilinear)
+    net = UNet(n_channels=1, n_classes=args.classes, bilinear=args.bilinear)
 
     logging.info(f'Network:\n'
                  f'\t{net.n_channels} input channels\n'
