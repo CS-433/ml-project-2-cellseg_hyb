@@ -15,8 +15,8 @@ class BasicDataset(Dataset):
         self.images_dir = Path(images_dir)
         self.masks_dir = Path(masks_dir)
 
-        self.img_ids = [splitext(file)[0] for file in listdir(images_dir) if not file.startswith('.')]
-        self.mask_ids = [splitext(file)[0] for file in listdir(masks_dir) if not file.startswith('.')]
+        self.img_ids = [splitext(file)[0] for file in sorted(listdir(images_dir)) if not file.startswith('.')]
+        self.mask_ids = [splitext(file)[0] for file in sorted(listdir(masks_dir)) if not file.startswith('.')]
         if not self.img_ids:
             raise RuntimeError(f'No input file found in {images_dir}, make sure you put your images there')
         if len(self.mask_ids) != len(self.img_ids):
@@ -36,10 +36,10 @@ class BasicDataset(Dataset):
             img_norm = (img_float -img_float.min())/(img_float.max() - img_float.min() + 1e-6)
             img_ndarray = np.asarray(img_norm)
 
-            if img_ndarray.ndim == 2:
-                img_ndarray = img_ndarray[np.newaxis, ...]
-            else:
-                img_ndarray = img_ndarray.transpose((2, 0, 1))
+        if img_ndarray.ndim == 2:
+            img_ndarray = img_ndarray[np.newaxis, ...]
+        else:
+            img_ndarray = img_ndarray.transpose((2, 0, 1))
 
         return img_ndarray
 
@@ -48,8 +48,11 @@ class BasicDataset(Dataset):
         return skio.imread(filename,plugin='pil')
 
     def __getitem__(self, idx):
+        #print(f'Go load {idx}')
         name_img = self.img_ids[idx]
         name_mask = self.mask_ids[idx]
+        #print(f'According to load idx {idx}, name_img = {name_img}')
+        #print(f'According to load idx {idx}, name_mask = {name_mask}')
         mask_file = list(self.masks_dir.glob(name_mask + '.tif'))
         img_file = list(self.images_dir.glob(name_img + '.tif'))
 
@@ -66,5 +69,5 @@ class BasicDataset(Dataset):
 
         return {
             'image': torch.as_tensor(img.copy()).float().contiguous(),
-            'mask': torch.as_tensor(mask.copy()).long().contiguous()
+            'mask': torch.as_tensor(mask.copy()).float().contiguous()
         }

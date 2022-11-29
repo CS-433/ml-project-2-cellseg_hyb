@@ -17,7 +17,7 @@ from evaluate import evaluate
 from unet import UNet
 
 DATASET = ['Fluo-N2DL-HeLa','PhC-C2DH-U373']
-idx = 0
+idx = 1
 
 dir_img = Path(f'../data/{DATASET[idx]}/IMG')
 dir_mask = Path(f'../data/{DATASET[idx]}/TARGET')
@@ -84,14 +84,14 @@ def train_net(net,
                     'the images are loaded correctly.'
 
                 images = images.to(device=device, dtype=torch.float32)
-                true_masks = true_masks.to(device=device, dtype=torch.long)
+                true_masks = true_masks.to(device=device, dtype=torch.float32)
 
                 with torch.cuda.amp.autocast(enabled=amp):
                     masks_pred = net(images)
                     loss = criterion(masks_pred, true_masks) \
                            + dice_loss(F.softmax(masks_pred, dim=1).float(),
-                                       F.one_hot(true_masks, net.n_classes).permute(0, 3, 1, 2).float(),
-                                       multiclass=True)
+                                       true_masks,
+                                       multiclass=False)
 
                 optimizer.zero_grad(set_to_none=True)
                 grad_scaler.scale(loss).backward()
