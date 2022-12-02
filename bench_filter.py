@@ -2,49 +2,28 @@ import skimage.filters as skf
 from sklearn.ensemble import RandomForestClassifier
 import numpy as np
 from tqdm import tqdm
+from filters import *
 
 from multiprocessing import cpu_count
 cpus = cpu_count()
 print(f'Number of CPU cores available : {cpus}')
 
-def identity(im):
-    return im
-
-def thresholding(im,thresh):
-    return im > thresh
-
-class Gaussian_Filter():
-
-    def __init__(self,sigma):
-        self.sigma = sigma 
-
-    def __call__(self,im):
-        return skf.gaussian(im,self.sigma)
-
-class Median_Filter():
-
-    def __init__(self,footprint):
-        self.footprint = footprint
-
-    def __call__(self,im):
-        return skf.median(im,self.footprint)
-
-
-class Bench_Filters():
+class Bench_Filter():
     """
     A classifier working with the following pipeline :
     Filters -> Random Forest
     """
 
-    def __init__(self, n_estimators):
+    def __init__(self, n_estimators, cpus):
         """
         Initialize Random Forest and variables of the object.
 
         Args :
             - n_estimators : int. The number of trees in the forest.
+            - cpus : int. The number of cpus to use to train the random forest.
         """
         self.nb_filters = 0
-        self.model = RandomForestClassifier(n_estimators=n_estimators,verbose=2,n_jobs=cpus-1) #Leave 1 cpu to avoid computer crash
+        self.model = RandomForestClassifier(n_estimators=n_estimators,verbose=2,n_jobs=cpus) 
         self.filters = []
         self.trained = False
 
@@ -206,4 +185,3 @@ class Bench_Filters():
         Reset training.
         """
         self.trained = False
-    

@@ -6,8 +6,8 @@ CURDIRPATH = os.path.dirname(__file__)
 DATASET = ['Fluo-N2DL-HeLa','PhC-C2DH-U373']
 idx = 1
 
-IM_PATH = sorted(glob.glob(os.path.join(CURDIRPATH,f'data/{DATASET[idx]}/01/*.tif')) + glob.glob(os.path.join(CURDIRPATH,f'data/{DATASET[idx]}/02/*.tif')))
-TG_PATH = sorted(glob.glob(os.path.join(CURDIRPATH,f'data/{DATASET[idx]}/01_ST/SEG/*.tif')) + glob.glob(os.path.join(CURDIRPATH,f'data/{DATASET[idx]}/02_ST/SEG/*.tif')))
+IM_PATH = sorted(glob.glob(os.path.join(CURDIRPATH,f'{DATASET[idx]}/01/*.tif')) + glob.glob(os.path.join(CURDIRPATH,f'{DATASET[idx]}/02/*.tif')))
+TG_PATH = sorted(glob.glob(os.path.join(CURDIRPATH,f'{DATASET[idx]}/01_ST/SEG/*.tif')) + glob.glob(os.path.join(CURDIRPATH,f'{DATASET[idx]}/02_ST/SEG/*.tif')))
 
 for path in IM_PATH :
     l = os.path.normpath(path)
