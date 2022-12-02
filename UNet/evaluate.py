@@ -1,14 +1,18 @@
 import torch
 import torch.nn.functional as F
+from torchmetrics.functional import jaccard_index
 from tqdm import tqdm
 
 from utils.dice_score import multiclass_dice_coeff, dice_coeff
+from utils.IoU import iou_pytorch
 
 
-def evaluate(net, dataloader, device):
+def evaluate(net, dataloader, device, metric):
+    assert (metric in ['IoU', 'Dice']),"Incorrect metric, choose in 'IoU' or 'Dice'."
+    
     net.eval()
     num_val_batches = len(dataloader)
-    dice_score = 0
+    score = 0
 
     # iterate over the validation set
     for batch in tqdm(dataloader, total=num_val_batches, desc='Validation round', unit='batch', leave=False):
@@ -23,13 +27,19 @@ def evaluate(net, dataloader, device):
 
             # convert to one-hot format
             if net.n_classes == 1:
-                mask_pred = (F.sigmoid(mask_pred) > 0.5).float()
-                # compute the Dice score
-                dice_score += dice_coeff(mask_pred, mask_true, reduce_batch_first=False)
+                mask_pred = (torch.sigmoid(mask_pred) > 0.5).float()
+                # compute the metric
+                if metric == 'IoU' :
+                    score += jaccard_index(mask_pred,mask_true,task='binary') #iou_pytorch(mask_pred, mask_true) 
+                else :
+                    score += dice_coeff(mask_pred, mask_true, reduce_batch_first=False)
             else:
                 mask_pred = F.one_hot(mask_pred.argmax(dim=1), net.n_classes).permute(0, 3, 1, 2).float()
-                # compute the Dice score, ignoring background
-                dice_score += multiclass_dice_coeff(mask_pred[:, 1:, ...], mask_true[:, 1:, ...], reduce_batch_first=False)
+                # compute the metric, ignoring background
+                if metric == 'IoU' :
+                    score += jaccard_index(mask_pred,mask_true,task='multiclass') #iou_pytorch(mask_pred[:, 1:, ...], mask_true[:, 1:, ...]) 
+                else :
+                    score += multiclass_dice_coeff(mask_pred[:, 1:, ...], mask_true[:, 1:, ...], reduce_batch_first=False)
 
            
 
@@ -37,5 +47,5 @@ def evaluate(net, dataloader, device):
 
     # Fixes a potential division by zero error
     if num_val_batches == 0:
-        return dice_score
-    return dice_score / num_val_batches
+        return score
+    return score / num_val_batches

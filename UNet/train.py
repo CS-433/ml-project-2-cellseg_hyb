@@ -17,22 +17,22 @@ from evaluate import evaluate
 from unet import UNet
 
 DATASET = ['Fluo-N2DL-HeLa','PhC-C2DH-U373']
-idx = 1
-
-dir_img = Path(f'../data/{DATASET[idx]}/IMG')
-dir_mask = Path(f'../data/{DATASET[idx]}/TARGET')
-dir_checkpoint = Path('./checkpoints/')
 
 
 def train_net(net,
+              dataset_idx,
               device,
               epochs: int = 5,
               batch_size: int = 1,
               learning_rate: float = 1e-5,
               val_percent: float = 0.1,
+              metric: str = 'IoU',
               save_checkpoint: bool = True,
               amp: bool = False):
     # 1. Create dataset
+    dir_img = Path(f'../data/{DATASET[dataset_idx]}/IMG')
+    dir_mask = Path(f'../data/{DATASET[dataset_idx]}/TARGET')
+    dir_checkpoint = Path(f'./checkpoints/{DATASET[dataset_idx]}/')
     dataset = BasicDataset(dir_img, dir_mask)
     
     # 2. Split into train / validation partitions
@@ -52,11 +52,13 @@ def train_net(net,
                                   amp=amp))
 
     logging.info(f'''Starting training:
+        Dataset:         {DATASET[dataset_idx]}
         Epochs:          {epochs}
         Batch size:      {batch_size}
         Learning rate:   {learning_rate}
         Training size:   {n_train}
         Validation size: {n_val}
+        Metric:          {metric}
         Checkpoints:     {save_checkpoint}
         Device:          {device.type}
         Mixed Precision: {amp}
@@ -120,13 +122,13 @@ def train_net(net,
                             if not torch.isinf(value.grad).any():
                                 histograms['Gradients/' + tag] = wandb.Histogram(value.grad.data.cpu())
 
-                        val_score = evaluate(net, val_loader, device)
+                        val_score = evaluate(net, val_loader, device, metric)
                         scheduler.step(val_score)
 
-                        logging.info('Validation Dice score: {}'.format(val_score))
+                        logging.info(f'Validation {metric} score: {val_score:.3f}')
                         experiment.log({
                             'learning rate': optimizer.param_groups[0]['lr'],
-                            'validation Dice': val_score,
+                            f'validation {metric}': val_score,
                             'images': wandb.Image(images[0].cpu()),
                             'masks': {
                                 'true': wandb.Image(true_masks[0].float().cpu()),
@@ -145,6 +147,7 @@ def train_net(net,
 
 def get_args():
     parser = argparse.ArgumentParser(description='Train the UNet on images and target masks')
+    parser.add_argument('--dataset', '-d', type=int, metavar='D', help='Dataset choice', dest='dataset', required=True)
     parser.add_argument('--epochs', '-e', metavar='E', type=int, default=5, help='Number of epochs')
     parser.add_argument('--batch-size', '-b', dest='batch_size', metavar='B', type=int, default=1, help='Batch size')
     parser.add_argument('--learning-rate', '-l', metavar='LR', type=float, default=1e-5,
@@ -152,6 +155,7 @@ def get_args():
     parser.add_argument('--load', '-f', type=str, default=False, help='Load model from a .pth file')
     parser.add_argument('--validation', '-v', dest='val', type=float, default=10.0,
                         help='Percent of the data that is used as validation (0-100)')
+    parser.add_argument('--metric', '-m', type=str, metavar='M', default='IoU', help='Metric used to evaluate performance', dest='metric')
     parser.add_argument('--amp', action='store_true', default=False, help='Use mixed precision')
     parser.add_argument('--bilinear', action='store_true', default=False, help='Use bilinear upsampling')
     parser.add_argument('--classes', '-c', type=int, default=1, help='Number of classes')
@@ -183,11 +187,13 @@ if __name__ == '__main__':
     net.to(device=device)
     try:
         train_net(net=net,
+                  dataset_idx=args.dataset,
                   epochs=args.epochs,
                   batch_size=args.batch_size,
                   learning_rate=args.lr,
                   device=device,
                   val_percent=args.val / 100,
+                  metric=args.metric,
                   amp=args.amp)
     except KeyboardInterrupt:
         torch.save(net.state_dict(), 'INTERRUPTED.pth')
