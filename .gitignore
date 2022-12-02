@@ -4,5 +4,4 @@
 .idea
 .DS_STORE
 # ignore data folder
-data/
 
