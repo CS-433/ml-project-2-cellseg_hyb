@@ -6,4 +6,7 @@
 # ignore folders
 __pycache__
 .ipynb_checkpoints
+UNet/wandb
+UNet/checkpoints
+
 
