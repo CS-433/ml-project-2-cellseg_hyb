@@ -3,5 +3,7 @@
 .env
 .idea
 .DS_STORE
-# ignore data folder
+# ignore folders
+__pycache__
+.ipynb_checkpoints
 
