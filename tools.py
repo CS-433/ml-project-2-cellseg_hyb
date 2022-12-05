@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+import skimage.io as skio
+import skimage
 
 def plot_pred_with_target(target, seg, score):
     fig, ax = plt.subplots(2,2,figsize=(15,10))
@@ -12,3 +14,13 @@ def plot_pred_with_target(target, seg, score):
     ax[1,1].set_title('False Positive')
     plt.tight_layout()
     plt.show()
+    
+def load_img_tg(IM_PATH, TG_PATH):
+    img, tg = [], []
+    for im_path, tg_path in zip(IM_PATH,TG_PATH) :
+        im = skio.imread(im_path,plugin='pil')
+        im = skimage.img_as_float(im)
+        im = (im -im.min())/(im.max() - im.min() + 1e-6)
+        img.append(im)
+        tg.append(skio.imread(tg_path,plugin='pil') > 0)
+    return img, tg
