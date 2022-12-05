@@ -30,8 +30,8 @@ def train_net(net,
               save_checkpoint: bool = True,
               amp: bool = False):
     # 1. Create dataset
-    dir_img = Path(f'../data/{DATASET[dataset_idx]}/IMG')
-    dir_mask = Path(f'../data/{DATASET[dataset_idx]}/TARGET')
+    dir_img = Path(f'../data/{DATASET[dataset_idx]}/IMG_TRAIN')
+    dir_mask = Path(f'../data/{DATASET[dataset_idx]}/TARGET_TRAIN')
     dir_checkpoint = Path(f'./checkpoints/{DATASET[dataset_idx]}/')
     dataset = BasicDataset(dir_img, dir_mask)
     
