@@ -14,6 +14,7 @@ def plot_pred_with_target(target, seg, score):
     ax[1,1].set_title('False Positive')
     plt.tight_layout()
     plt.show()
+    return fig
     
 def load_img_tg(IM_PATH, TG_PATH):
     img, tg = [], []
