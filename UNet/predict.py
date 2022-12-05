@@ -7,6 +7,7 @@ import torch
 import torch.nn.functional as F
 from PIL import Image
 from torchvision import transforms
+import matplotlib.pyplot as plt
 
 from utils.data_loading import BasicDataset
 from unet import UNet
@@ -15,7 +16,6 @@ from utils.utils import plot_img_and_mask
 def predict_img(net,
                 full_img,
                 device,
-                scale_factor=1,
                 out_threshold=0.5):
     net.eval()
     img = torch.from_numpy(BasicDataset.preprocess(full_img, is_mask=False))
@@ -55,8 +55,6 @@ def get_args():
     parser.add_argument('--no-save', '-n', action='store_true', help='Do not save the output masks')
     parser.add_argument('--mask-threshold', '-t', type=float, default=0.5,
                         help='Minimum probability value to consider a mask pixel white')
-    parser.add_argument('--scale', '-s', type=float, default=0.5,
-                        help='Scale factor for the input images')
     parser.add_argument('--bilinear', action='store_true', default=False, help='Use bilinear upsampling')
 
     return parser.parse_args()
@@ -100,9 +98,15 @@ if __name__ == '__main__':
 
         mask = predict_img(net=net,
                            full_img=img,
-                           scale_factor=args.scale,
                            out_threshold=args.mask_threshold,
                            device=device)
+        
+        # results.append(jaccard_score(y_test[i],pred,average='micro'))
+        # plt.hist(results,bins=100,range=(0,1))
+        # plt.title(f'IoU of random forest on {DATASET[idx]}')
+        # plt.xlabel('IoU score')
+        # plt.ylabel('Frequency')
+        # plt.savefig(f'output/rf_performance_dataset_{idx}.png')
 
         if not args.no_save:
             out_filename = out_files[i]

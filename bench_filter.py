@@ -4,10 +4,6 @@ import numpy as np
 from tqdm import tqdm
 from filters import *
 
-from multiprocessing import cpu_count
-cpus = cpu_count()
-print(f'Number of CPU cores available : {cpus}')
-
 class Bench_Filter():
     """
     A classifier working with the following pipeline :
