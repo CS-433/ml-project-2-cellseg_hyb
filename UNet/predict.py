@@ -9,16 +9,17 @@ from PIL import Image
 from torchvision import transforms
 import matplotlib.pyplot as plt
 
-from utils.data_loading import BasicDataset
-from unet import UNet
-from utils.utils import plot_img_and_mask
+from UNet.utils.data_loading import BasicDataset
+from UNet.unet import UNet
+from UNet.utils.utils import plot_img_and_mask
 
 def predict_img(net,
                 full_img,
                 device,
                 out_threshold=0.5):
     net.eval()
-    img = torch.from_numpy(BasicDataset.preprocess(full_img, is_mask=False))
+
+    img = torch.from_numpy(full_img[np.newaxis, ...])
     img = img.unsqueeze(0)
     img = img.to(device=device, dtype=torch.float32)
 
@@ -29,10 +30,10 @@ def predict_img(net,
             probs = F.softmax(output, dim=1)[0]
         else:
             probs = torch.sigmoid(output)[0]
-
+            
         tf = transforms.Compose([
             transforms.ToPILImage(),
-            transforms.Resize((full_img.size[1], full_img.size[0])),
+            transforms.Resize((full_img.shape[0], full_img.shape[1])),
             transforms.ToTensor()
         ])
 
