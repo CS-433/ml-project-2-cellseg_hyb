@@ -99,21 +99,22 @@ class Bench_Filter():
             - X_filter : 2D array. Lines corresponds to samples and columns to features of each filters.
             - y_ravel : 1D array. Groundtruth of each pixel of X_filter.
         """
-        X_filter = np.zeros((len(X) * self.nb_pixels, self.nb_filters))
+        nb_pixels = X[0].shape[0] * X[0].shape[1]
+        X_filter = np.zeros((len(X) * nb_pixels, self.nb_filters))
 
         for i, image in tqdm(enumerate(X),desc="Applying filters to dataset") :
 
             out_filters = []
             for filter in self.filters :
                 out_filters.append(np.ravel(filter(image)))
-            
-            X_filter[i * self.nb_pixels : (i+1) * self.nb_pixels, :] = np.vstack(out_filters).T 
+
+            X_filter[i * nb_pixels : (i+1) * nb_pixels, :] = np.vstack(out_filters).T 
         
         y_ravel = None
         if y :
-            y_ravel = np.zeros(len(X) * self.nb_pixels)
+            y_ravel = np.zeros(len(X) * nb_pixels)
             for i, target in enumerate(y):
-                y_ravel[i * self.nb_pixels : (i+1) * self.nb_pixels] = np.ravel(target)
+                y_ravel[i * nb_pixels : (i+1) * nb_pixels] = np.ravel(target)
 
         return X_filter, y_ravel
 
@@ -125,8 +126,6 @@ class Bench_Filter():
             - X_train : list. List of 2D images.
             - y_train : list. List of 2D images, groundtruth segmentation of X.
         """
-        self.L, self.C = X_train[0].shape
-        self.nb_pixels = self.L * self.C
 
         X_train_filtered, y_train_ravel = self.apply_filter_and_ravel(X_train, y_train)
         
@@ -146,13 +145,10 @@ class Bench_Filter():
         if not self.trained :
             raise Exception("Please train the model before trying to predict something.")
 
-        if X_test[0].shape[0] != self.L and X_test[0].shape[1] != self.C :
-            raise ValueError(f"Dimensions of test images don't match train images : Train : ({self.L},{self.C}) | Test : ({X_test[0].shape[0]},{X_test[0].shape[1]})")
-
         X_test_filtered, _ = self.apply_filter_and_ravel(X_test)
         
         y_pred_ravel = self.model.predict(X_test_filtered)
-        return y_pred_ravel.reshape(len(X_test), self.L, self.C)
+        return y_pred_ravel.reshape(len(X_test), X_test[0].shape[0], X_test[0].shape[1])
 
     def predict_proba(self,X_test,threshold=0.5):
         """
@@ -168,13 +164,10 @@ class Bench_Filter():
         if not self.trained :
             raise Exception("Please train the model before trying to predict something.")
 
-        if X_test[0].shape[0] != self.L and X_test[0].shape[1] != self.C :
-            raise ValueError(f"Dimensions of test images don't match train images : Train : ({self.L},{self.C}) | Test : ({X_test[0].shape[0]},{X_test[0].shape[1]})")
-
         X_test_filtered, _ = self.apply_filter_and_ravel(X_test)
         
         y_pred_ravel = self.model.predict_proba(X_test_filtered)
-        return (y_pred_ravel[:,1] > threshold).reshape(len(X_test), self.L, self.C)
+        return (y_pred_ravel[:,1] > threshold).reshape(len(X_test), X_test[0].shape[0], X_test[0].shape[1])
 
     def reset_train(self):
         """
