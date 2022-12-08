@@ -19,6 +19,7 @@ class Bench_Filter():
             - cpus : int. The number of cpus to use to train the random forest.
         """
         self.nb_filters = 0
+        self.feature_names = []
         self.model = RandomForestClassifier(n_estimators=n_estimators,verbose=2,n_jobs=cpus) 
         self.filters = []
         self.trained = False
@@ -29,6 +30,7 @@ class Bench_Filter():
         """
         self.filters.append(identity)
         self.nb_filters += 1
+        self.feature_names.append('Identity')
 
     def add_gaussian(self, sigma):
         """
@@ -39,6 +41,7 @@ class Bench_Filter():
         """
         self.filters.append(Gaussian_Filter(sigma))
         self.nb_filters += 1
+        self.feature_names.append(f'Gaussian sig={sigma:.2f}')
 
     def add_sobel(self):
         """
@@ -46,6 +49,7 @@ class Bench_Filter():
         """
         self.filters.append(skf.sobel)
         self.nb_filters += 1
+        self.feature_names.append('Sobel')
 
     def add_prewitt(self):
         """
@@ -53,6 +57,7 @@ class Bench_Filter():
         """
         self.filters.append(skf.prewitt)
         self.nb_filters += 1
+        self.feature_names.append('Prewitt')
 
     def add_roberts(self):
         """
@@ -60,6 +65,7 @@ class Bench_Filter():
         """
         self.filters.append(skf.roberts)
         self.nb_filters += 1
+        self.feature_names.append('Roberts')
 
     def add_scharr(self):
         """
@@ -67,6 +73,7 @@ class Bench_Filter():
         """
         self.filters.append(skf.scharr)
         self.nb_filters += 1
+        self.feature_names.append('Scharr')
 
     def add_farid(self):
         """
@@ -74,6 +81,7 @@ class Bench_Filter():
         """
         self.filters.append(skf.farid)
         self.nb_filters += 1
+        self.feature_names.append('Farid')
     
     def add_median(self,footprint=None):
         """
@@ -86,6 +94,30 @@ class Bench_Filter():
         """
         self.filters.append(Median_Filter(footprint))
         self.nb_filters +=1
+        self.feature_names.append('Median')
+
+    def add_gabor(self,frequency,theta):
+        """
+        Add gabor filter on the bench.
+
+        Args :
+            frequency : float. Spatial frequency of the harmonic function. Specified in pixels.
+            theta : float. Orientation in radians. If 0, the harmonic is in the x-direction.
+        """
+        self.filters.append(Gabor_Filter(frequency,theta))
+        self.nb_filters += 1
+        self.feature_names.append(f'Gabor f,t={frequency:.2f},{theta:.2f}')
+
+    def add_stddev(self,neighbourhood):
+        """
+        Add gabor filter on the bench.
+
+        Args :
+            neighbourhood : int. Gives the shape that is taken from the input array.
+        """
+        self.filters.append(StdDev_Filter(neighbourhood))
+        self.nb_filters +=1
+        self.feature_names.append(f'Std Dev neigh={neighbourhood}')
 
     def apply_filter_and_ravel(self, X, y=None):
         """

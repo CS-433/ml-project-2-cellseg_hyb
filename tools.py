@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import skimage.io as skio
 import skimage
 import numpy as np
+import pandas as pd
 
 def plot_pred_with_target(target, seg, score):
     fig, ax = plt.subplots(2,2,figsize=(15,10))
@@ -67,4 +68,19 @@ def common_divisors(num1, num2):
             divs.append(div)
 
     return divs
+
+def RF_feature_importances(bench_model,fig_name=None):
+    importances = bench_model.model.feature_importances_
+    std = np.std([tree.feature_importances_ for tree in bench_model.model.estimators_], axis=0)
+
+    forest_importances = pd.Series(importances, index=bench_model.feature_names)
+
+    fig, ax = plt.subplots()
+    forest_importances.plot.bar(yerr=std, ax=ax)
+    ax.set_title("Feature importances using MDI")
+    ax.set_ylabel("Mean decrease in impurity")
+    fig.tight_layout()
+    if fig_name :
+        fig.savefig(f'output/feature_importance_{fig_name}.png')
+    plt.show()
     
