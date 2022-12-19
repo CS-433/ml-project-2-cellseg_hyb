@@ -96,11 +96,7 @@ This repository contains code used for building a segmentation model of cell ima
 
 Place the data in the `data` folder. The data, can be downloaded [here](http://celltrackingchallenge.net/2d-datasets/). Then, successively run merge_dataset.py and split_dataset.py. It will move each images in the right folder.
 
-In order to generate our final submission file, you have to run : 
-
-```
-
-```
+Then all the lines to obtain our results are in each notebook associated.
 
 
 ## Results
