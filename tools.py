@@ -140,6 +140,6 @@ def RF_feature_importances(bench_model,fig_name=None):
     ax.set_ylabel("Mean decrease in impurity")
     fig.tight_layout()
     if fig_name :
-        fig.savefig(f'output/feature_importance_{fig_name}.png')
+        fig.savefig(f'output/Feature_importance/feature_importance_{fig_name}.png')
     plt.show()
     
