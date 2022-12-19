@@ -8,6 +8,7 @@ class Bench_Filter():
     """
     A classifier working with the following pipeline :
     Filters -> Random Forest
+    See report for more explanations.
     """
 
     def __init__(self, n_estimators, cpus):
